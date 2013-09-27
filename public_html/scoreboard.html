@@ -50,7 +50,7 @@ along with Exaboard.  If not, see <http://www.gnu.org/licenses/>.
 							<option value="broomball">Broomball</option>
 							<option value="hockey">Field Hockey</option>
 							<option value="football">Football</option>
-							<option value="hockey">Hockey</option>
+							<option value="hockey" selected="selected">Hockey</option>
 							<option value="rugby">Rugby</option>
 							<option value="soccer">Soccer</option>
 							<option value="baseball">Softball</option>
@@ -92,7 +92,7 @@ along with Exaboard.  If not, see <http://www.gnu.org/licenses/>.
 						<span style="font-size: 24pt; font-weight:bold;" id="period">1</span>
 					</div>
 					
-					<div id="clockMenu">
+					<div id="clockMenu" style="white-space:nowrap;">
 						<div id="dnSec" class="bttn">&minus;1 sec</div>
 						<div id="dnTenth" class="bttn">&minus;1/10 sec</div>
 						<div id="toggleClock" class="bttn" style="border: 2px solid lime;">Start/Stop</div>
@@ -120,7 +120,7 @@ along with Exaboard.  If not, see <http://www.gnu.org/licenses/>.
 						</span>
 						<div class="bttn" id="displayDownDistance" value="1">Display</div>
 						<div class="bttn" id="clearDownDistance" value="0">Clear</div>
-						<div class="bttn" id="globalFlag" status="Flag" color="yellow" style="border-color:yellow">Flag</div>
+						<div class="bttn" id="globalFlag" status="FLAG" color="yellow" style="border-color:yellow">Flag</div>
             </br>
 						
 						<div class="bttn firstAnd10" id="firstAnd10">1st &amp; 10</div>
@@ -141,7 +141,7 @@ along with Exaboard.  If not, see <http://www.gnu.org/licenses/>.
 						<div class="bttn addSubYTG" id="plus5YTG" value="5">+5</div>
 						<div class="bttn addSubYTG" id="plus10YTG" value="10">+10</div>
 						<div class="bttn addSubYTG" id="plus15YTG" value="15">+15</div>
-						</br><!-- CONSIDER DELETING IF PLUS/MINUS INTERFACE WORKS
+						</br>
 						<div class="bttn ytg" id="1YTG" value="1">1</div>
 						<div class="bttn ytg" id="2YTG" value="2">2</div>
 						<div class="bttn ytg" id="3YTG" value="3">3</div>
@@ -166,7 +166,11 @@ along with Exaboard.  If not, see <http://www.gnu.org/licenses/>.
 						<div class="bttn ytg" id="20YTG" value="20">20</div>
 						</br>
 						
-						<div class="bttn ytg" id="25YTG" value="25">25</div>-->
+						<div class="bttn ytg" id="21YTG" value="21">21</div>
+						<div class="bttn ytg" id="22YTG" value="22">22</div>
+						<div class="bttn ytg" id="23YTG" value="23">23</div>
+						<div class="bttn ytg" id="24YTG" value="24">24</div>
+						<div class="bttn ytg" id="25YTG" value="25">25</div>
 						<div class="bttn ytgSpecial" id="goalYTG" value="Goal">Goal</div>
 						<div class="bttn ytgSpecial" id="inchesYTG" value="Inches">Inches</div>
 						<span>
@@ -187,18 +191,19 @@ along with Exaboard.  If not, see <http://www.gnu.org/licenses/>.
             <div class="teamControl" id="homeTeamControl"></div>
         </div>
 		
-        <div id="announceControl" class="control">Announce
-            <br />
+        <div id="announceControl" class="control">Announce/Status
+            
             <input type="text" id="textInput" />
-        <div id="colorControl" class="control">Colour
-            <br />
+        <div id="colorControl" class="control">Color
+            
             <input disabled="disabled" type="text" id="textInputColor" />
 
             <br />
-            <div id="announce" class="bttn" style="width: 223px;">Announce</div>
-            <div id="status" class="bttn" style="width: 223px;">Status</div>
-            
-            <div id="nextAnnounce" class="bttn" style="width: 464px;">Next Announce / Clear</div>
+            <div id="announce" class="bttn" style="width: 200px;">Announce</div>
+            <div id="nextAnnounce" class="bttn" style="width: 200px;">Next Announce / Clear</div>
+
+            <div id="status" class="bttn" style="width: 200px;">Status</div>
+            <div id="clearStatus" class="bttn" style="width: 200px;">Status Clear</div>
         </div>
         <div id="transitionControl" class="control">
             <div id="up" class="bttn" style="border: 2px solid red;">UP</div>
@@ -303,8 +308,8 @@ along with Exaboard.  If not, see <http://www.gnu.org/licenses/>.
             </div>
 			<div class="ck-bttn football lacrosse">
                 <label>
-                    <input type="checkbox" class="statusBttn" id="flag" status="Flag"color="yellow"><span>Flag</span>
-
+                    <input type="checkbox" class="statusBttn" id="flag" status="FLAG" color="yellow">
+                        <span>Flag</span>
                     </input>
                 </label>
             </div>

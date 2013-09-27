@@ -858,9 +858,9 @@ class ScoreboardView
     def render
         while command_queue.length > 0
             cmd = command_queue.shift
-            if (cmd.has_key? 'down')
+            if (cmd.has_key? 'down' and @global_dissolve.value >= 1.0)
                 @global_dissolve.out(15)
-            elsif (cmd.has_key? 'up')
+            elsif (cmd.has_key? 'up' and @global_dissolve.value <= 0.0)
                 @global_dissolve.in(15)
             elsif (cmd.has_key? 'announce_next')
                 @announce_text_dissolve.out(10) {
