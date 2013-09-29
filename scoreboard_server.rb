@@ -110,6 +110,16 @@ class GameClock
         @period = newperiod
     end
 
+    def num_periods=(new_num_periods)
+        @num_periods = new_num_periods
+        reset_time(period_remaining(), @period)
+    end
+
+    def period_length=(new_pdlen)
+        @period_length = new_pdlen
+        reset_time(period_remaining(), @period)
+    end
+
     def overtime_length=(new_otlen)
         @overtime_length = new_otlen
         reset_time(period_remaining(), @period)
@@ -117,6 +127,7 @@ class GameClock
 
     attr_reader :period
     attr_reader :num_periods
+    attr_reader :period_length
     attr_reader :overtime_length
 
     def start
@@ -392,7 +403,7 @@ class ClockHelper
         minutes = seconds / 60
         seconds = seconds % 60
 
-        if @clock.overtime_length == 0 && @clock.period > @clock.num_periods
+        if @clock.period_length == 0 || (@clock.overtime_length == 0 && @clock.period > @clock.num_periods)
             ''
         elsif minutes > 0
             format '%d:%02d', minutes, seconds
@@ -622,6 +633,35 @@ class ScoreboardApp < Patchbay
         render :json => {
             'enabled' => @autosync_enabled
         }.to_json
+    end
+
+    put '/settings' do
+        numpd = incoming_json['numpd'].to_i
+        if (numpd >= 0)
+            @clock.num_periods = numpd
+        end
+        pdlen = incoming_json['pdlen'].to_i
+        if (pdlen >= 0)
+            @clock.period_length = pdlen
+        end
+        otlen = incoming_json['otlen'].to_i
+        if (otlen >= 0) 
+            @clock.overtime_length = otlen
+        end
+
+        render :json => {
+            'numpd' => @clock.num_periods,
+            'pdlen' => @clock.period_length,
+            'otlen' => @clock.overtime_length
+        }.to_json
+    end
+
+    get '/settings' do
+        render :json => {
+            'numpd' => @clock.num_periods,
+            'pdlen' => @clock.period_length,
+            'otlen' => @clock.overtime_length
+        }.to_json     
     end
 
     post '/announce' do
@@ -916,7 +956,7 @@ end
 app = ScoreboardApp.new
 app.view = ScoreboardView.new('reilly_scoreboard_fb_hacked_ecac.svg.erb')
 Thin::Logging.silent = true
-Thread.new { app.run(:Host => '::1', :Port => 3002) }
+Thread.new { app.run(:Host => '0.0.0.0', :Port => 3002) }
 
 def start_rs232_sync_thread(app)
     Thread.new do

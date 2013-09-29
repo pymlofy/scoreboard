@@ -140,6 +140,33 @@ function intOrZero(x) {
     }
 }
 
+// turn string into integer number of tenths
+function parseTime(x) {
+    var whole = NaN;
+    var frac = 0;
+
+    var fracparts = /(.*)\.(\d+)/.exec(x);
+    if (fracparts) {
+        x = fracparts[1];
+        var frac = (parseFloat("0." + fracparts[2]) * 1000) | 0;
+        if (isNaN(frac)) { frac = 0; }
+    }
+
+    var wholeparts = /(\d+):(\d+)/.exec(x);
+	if (wholeparts) {
+		whole = parseInt(wholeparts[1], 10) * 60 + parseInt(wholeparts[2], 10);
+    }
+	else {
+        wholeparts = /(\d+)/.exec(x);
+        if (wholeparts) {
+		    whole = parseInt(wholeparts[1], 10);
+		    whole = ((whole / 100) | 0) * 60 + (whole % 100);
+        }
+	}
+        
+    return (whole * 1000 + frac) / 100;
+}
+
 function startClock(dummy) {
     // save the time for penalties
     lastStopTimeElapsed = clockState.time_elapsed;
@@ -652,8 +679,8 @@ function ytgUpdate(thiz){
 			//catches nth & Inches; only increases value
 			ytg = parseInt(0);
 			ytg += parseInt(addSubYTG);		
-		}else if(ytg + parseInt(addSubYTG) > 0 && ytg + parseInt(addSubYTG) < 90){
-			//values cannot be below 1 and above 89 because that's how football works
+		}else if(ytg + parseInt(addSubYTG) > 0 && ytg + parseInt(addSubYTG) < 100){
+			//values cannot be below 1 and above 99 because that's how football works
 			ytg += parseInt(addSubYTG);
 		}	
 	}else if(addSubYTG == "Goal" || addSubYTG == "Inches"){
@@ -830,10 +857,41 @@ function getAutosync() {
         }
     });
 }
+
+function getSettings() {
+    getJson('settings', function(data) {
+        $("#periodSetting").val(data.numpd);
+        $("#periodLength").val(formatTime(data.pdlen));
+        $("#timeouts").val("");
+        $("#otPeriodSetting").val("");
+        $("#otPeriodLength").val(formatTime(data.otlen));
+        $("#shootoutSetting").prop('checked',false);
+        overtime_length = data.otlen;
+    }); 
+}
+
+function changeSettings() {
+    var numpd = $("#periodSetting").val();
+    var pdlen = parseTime($("#periodLength").val());
+    if (isNaN(pdlen)) { pdlen = -1; }
+    var otlen = parseTime($("#otPeriodLength").val());
+    if (isNaN(otlen)) { otlen = -1; }
+    putJson('settings', { 
+        'numpd' : numpd, 
+        'pdlen' : pdlen, 
+        'otlen' : otlen 
+    });
+    getSettings();
+    // needed to recalculate penalty times
+    $('.teamControl').team().each( function(index) { $(this).putTeamData(); } );
+}
+
+
 $(document).ready(function() {
     updateClockTimeout( );
     updatePreviewTimeout( );
     getAutosync( );
+    getSettings( );
 
     $(".teamControl").buildTeamControl();
     // set up team URLs and load initial data
@@ -921,7 +979,7 @@ $(document).ready(function() {
 		document.title = ('Exaboard - ' + $("#gameType :selected").html());
 	});
 	
-	//TEMPORARY FOR SANITY PURPOSES sets to football
+	//TEMPORARY FOR SANITY PURPOSES sets to hockey
 	$(".baseball, .basketball, .broomball, .football, .hockey, .lacrosse, .rugby, .soccer, .volleyball").fadeOut();
 	$(".hockey").fadeIn();
 	$("#toggleSettings").trigger("click");
@@ -943,6 +1001,7 @@ $(document).ready(function() {
     $("#transitionControl #down").click(scoreboardDown);
     $("#setClock").click(setClock);
     $("#autoSync").change(changeAutosync);
+    $("#gameSettings").find("input,select").blur(changeSettings);
 	$(".bttn.downs, .bttn.nextDown, .bttn.firstAnd10").click(function(){downUpdate(this);});
 	$(".bttn.ytg, .bttn.ytgSpecial, .bttn.addSubYTG").click(function(){ytgUpdate(this);});
 	$("#customYTG").change(function(){ytgCustom(this);});
