@@ -160,7 +160,7 @@ function parseTime(x) {
         wholeparts = /(\d+)/.exec(x);
         if (wholeparts) {
 		    whole = parseInt(wholeparts[1], 10);
-		    whole = ((whole / 100) | 0) * 60 + (whole % 100);
+		    whole = ((whole / 100) | 0) * 60 + ((whole % 100) | 0);
         }
 	}
         
@@ -179,8 +179,8 @@ function stopClock(dummy) {
 
 function formatTime(tenthsClock) {
     var tenths = tenthsClock % 10;
-    var seconds = Math.floor(tenthsClock / 10);
-    var minutes = Math.floor(seconds / 60);
+    var seconds = (tenthsClock / 10) | 0;
+    var minutes = (seconds / 60) | 0;
     seconds = seconds % 60;
 
     var result = minutes + ":";
@@ -189,6 +189,20 @@ function formatTime(tenthsClock) {
     } 
     result += seconds;
     result += "." + tenths;
+    return result;
+}
+
+function formatTimeNoTenths(tenthsClock) {
+    tenthsClock += 9;
+    var seconds = (tenthsClock / 10) | 0;
+    var minutes = (seconds / 60) | 0;
+    seconds = seconds % 60;
+
+    var result = minutes + ":";
+    if (seconds < 10) {
+        result += "0";
+    } 
+    result += seconds;
     return result;
 }
 
@@ -211,7 +225,13 @@ function updateClock( ) {
             clockField.removeClass("clock_running");
         }
 
-        clockField.text(formatTime(tenthsRemaining));
+        if ($("#tenthsSetting").prop('checked'))
+        {
+            clockField.text(formatTime(tenthsRemaining));
+        } else {
+            clockField.text(formatTimeNoTenths(tenthsRemaining));
+        }
+
         periodField.text(period);
     });
 }
@@ -485,7 +505,7 @@ jQuery.fn.timeval = function(tv) {
     } else {
         // parse value
         var val = this.val( );
-        var re = /((\d+):)?(\d+)(.(\d+))? (\d)/
+        var re = /((\d+):)?(\d+)(\.(\d+))? (\d)/
         var result = re.exec(val);
 
         if (result) {
@@ -866,6 +886,7 @@ function getSettings() {
         $("#otPeriodSetting").val("");
         $("#otPeriodLength").val(formatTime(data.otlen));
         $("#shootoutSetting").prop('checked',false);
+        $("#tenthsSetting").prop('checked',data.use_tenths);
         overtime_length = data.otlen;
     }); 
 }
@@ -876,10 +897,12 @@ function changeSettings() {
     if (isNaN(pdlen)) { pdlen = -1; }
     var otlen = parseTime($("#otPeriodLength").val());
     if (isNaN(otlen)) { otlen = -1; }
-    putJson('settings', { 
+    var use_tenths = $("#tenthsSetting").prop('checked');
+    putJson('settings', {
         'numpd' : numpd, 
         'pdlen' : pdlen, 
-        'otlen' : otlen 
+        'otlen' : otlen,
+        'use_tenths' : use_tenths
     });
     getSettings();
     // needed to recalculate penalty times
@@ -1002,6 +1025,8 @@ $(document).ready(function() {
     $("#setClock").click(setClock);
     $("#autoSync").change(changeAutosync);
     $("#gameSettings").find("input,select").blur(changeSettings);
+    $("#shootoutSetting").change(changeSettings);
+    $("#tenthsSetting").change(changeSettings);
 	$(".bttn.downs, .bttn.nextDown, .bttn.firstAnd10").click(function(){downUpdate(this);});
 	$(".bttn.ytg, .bttn.ytgSpecial, .bttn.addSubYTG").click(function(){ytgUpdate(this);});
 	$("#customYTG").change(function(){ytgCustom(this);});

@@ -57,6 +57,7 @@ class GameClock
         @period_end = @period_length
         @period = 1
         @num_periods = preset.num_periods
+        @use_tenths = true
     end
 
 
@@ -129,6 +130,7 @@ class GameClock
     attr_reader :num_periods
     attr_reader :period_length
     attr_reader :overtime_length
+    attr_accessor :use_tenths
 
     def start
         if @value == @period_end
@@ -397,6 +399,10 @@ class ClockHelper
     def time
         tenths = @clock.period_remaining
 
+        if !@clock.use_tenths
+            tenths += 9
+        end
+
         seconds = tenths / 10
         tenths = tenths % 10
 
@@ -405,7 +411,7 @@ class ClockHelper
 
         if @clock.period_length == 0 || (@clock.overtime_length == 0 && @clock.period > @clock.num_periods)
             ''
-        elsif minutes > 0
+        elsif minutes > 0 || !@clock.use_tenths
             format '%d:%02d', minutes, seconds
         else
             format ':%02d.%d', seconds, tenths
@@ -648,11 +654,17 @@ class ScoreboardApp < Patchbay
         if (otlen >= 0) 
             @clock.overtime_length = otlen
         end
+        if incoming_json['use_tenths']
+            @clock.use_tenths = true
+        else
+            @clock.use_tenths = false
+        end
 
         render :json => {
             'numpd' => @clock.num_periods,
             'pdlen' => @clock.period_length,
-            'otlen' => @clock.overtime_length
+            'otlen' => @clock.overtime_length,
+            'use_tenths' => @clock.use_tenths
         }.to_json
     end
 
@@ -660,7 +672,8 @@ class ScoreboardApp < Patchbay
         render :json => {
             'numpd' => @clock.num_periods,
             'pdlen' => @clock.period_length,
-            'otlen' => @clock.overtime_length
+            'otlen' => @clock.overtime_length,
+            'use_tenths' => @clock.use_tenths
         }.to_json     
     end
 
@@ -956,7 +969,7 @@ end
 app = ScoreboardApp.new
 app.view = ScoreboardView.new('reilly_scoreboard_fb_hacked_ecac.svg.erb')
 Thin::Logging.silent = true
-Thread.new { app.run(:Host => '0.0.0.0', :Port => 3002) }
+Thread.new { app.run(:Host => '::1', :Port => 3002) }
 
 def start_rs232_sync_thread(app)
     Thread.new do
